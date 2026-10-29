@@ -9,43 +9,84 @@ from pathlib import Path
 DEFAULT_FONT = "Myanmar Text"
 ROOT = Path(__file__).resolve().parent
 CACHE_FILE = ROOT.parent / "logs" / "subtitle_fonts.json"
-_FONT_DIRS = [Path(os.environ.get("WINDIR", r"C:\Windows")) / "Fonts",
-              Path(os.environ.get("LOCALAPPDATA", "")) / "Microsoft" / "Windows" / "Fonts"]
+# Linux packages (fonts-noto-core, fonts-sil-padauk) keep Myanmar faces in subfolders.
+# Only filenames that look like a Myanmar font are opened there; Windows Fonts stays a flat scan.
+_NAME_HINTS = ("myanmar", "padauk", "pyidaungsu", "burma", "mmrtext")
+
+
+def _font_dirs() -> list[Path]:
+    home = Path.home()
+    dirs = [
+        Path(os.environ.get("WINDIR", r"C:\Windows")) / "Fonts",
+        Path(os.environ.get("LOCALAPPDATA", "")) / "Microsoft" / "Windows" / "Fonts",
+        Path("/usr/share/fonts"),
+        Path("/usr/local/share/fonts"),
+        home / ".local" / "share" / "fonts",
+        home / ".fonts",
+    ]
+    extra = os.environ.get("RECAP_FONT_DIR")
+    if extra:
+        dirs.append(Path(extra))
+    return dirs
+
+
+def _font_files(directory: Path):
+    """Windows Fonts is one flat folder. Everywhere else, Myanmar faces sit in subfolders."""
+    if not directory.is_dir():
+        return
+    windows_flat = directory.name.casefold() == "fonts" and "windows" in str(directory).casefold()
+    try:
+        found = directory.iterdir() if windows_flat else directory.rglob("*")
+        paths = sorted(p for p in found if p.is_file() and p.suffix.lower() in {".ttf", ".otf", ".ttc"})
+    except OSError:
+        return
+    for path in paths:
+        if not windows_flat and not any(hint in path.name.casefold() for hint in _NAME_HINTS):
+            continue
+        yield path
 
 
 def _scan() -> dict[str, list[str]]:
     from fontTools.ttLib import TTCollection, TTFont
 
     families: dict[str, list[str]] = {}
-    for directory in _FONT_DIRS:
-        if not directory.is_dir():
-            continue
-        for path in sorted(directory.iterdir()):
-            if path.suffix.lower() not in {".ttf", ".otf", ".ttc"}:
-                continue
+    for directory in _font_dirs():
+        for path in _font_files(directory):
+            collection = None
             try:
-                fonts = TTCollection(str(path)).fonts if path.suffix.lower() == ".ttc" else [TTFont(str(path), lazy=True)]
-                for font in fonts:
-                    cmap = font.getBestCmap() or {}
-                    # KA + vowel sign E: a real Myanmar (Unicode) font, not a Latin fallback.
-                    if 0x1000 in cmap and 0x1031 in cmap:
-                        family = str(font["name"].getDebugName(1) or "").strip()
-                        if family:
-                            families.setdefault(family, [])
-                            if str(path) not in families[family]:
-                                families[family].append(str(path))
+                if path.suffix.lower() == ".ttc":
+                    collection = TTCollection(str(path))
+                    opened = collection.fonts
+                else:
+                    opened = [TTFont(str(path), lazy=True)]
+                for font in opened:
+                    try:
+                        cmap = font.getBestCmap() or {}
+                        # KA + vowel sign E: a real Myanmar (Unicode) font, not a Latin fallback.
+                        if 0x1000 in cmap and 0x1031 in cmap:
+                            family = str(font["name"].getDebugName(1) or "").strip()
+                            if family:
+                                families.setdefault(family, [])
+                                if str(path) not in families[family]:
+                                    families[family].append(str(path))
+                    finally:
+                        if collection is None:
+                            font.close()
             except Exception:
                 continue
+            finally:
+                if collection is not None:
+                    collection.close()
     return families
 
 
 def _signature() -> list:
     sig = []
-    for directory in _FONT_DIRS:
+    for directory in _font_dirs():
         try:
-            sig.append([str(directory), directory.stat().st_mtime_ns, len(list(directory.iterdir()))])
+            sig.append([str(directory), directory.stat().st_mtime_ns])
         except OSError:
-            sig.append([str(directory), 0, 0])
+            sig.append([str(directory), 0])
     return sig
 
 

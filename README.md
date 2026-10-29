@@ -230,6 +230,9 @@ app/
   recap_subtitles.py       Narration Subtitle UI (font / အရောင် / box …)
   gemini_tts.py            Gemini TTS narrator (တစ်ကားလုံး narrator တစ်ယောက်တည်း)
   launch.ps1               Python ရှာပြီး UI ဖွင့်တာ
+web/                       Browser UI (FastAPI). Desktop app ကို မထိပါ
+deploy/                    VPS install script, systemd, Nginx
+DEPLOY.md                  VPS တပ်ဆင်နည်း (အင်္ဂလိပ် + မြန်မာ)
 recap_runtime/services/
   whisper_service.py       faster-whisper (GPU / CPU)
   ai_service.py            Gemini client (proxy option)
@@ -237,6 +240,12 @@ services/
   text_overlay_service.py  မြန်မာ title စာကို Chromium နဲ့ ပုံထုတ်တာ
 tests/                     python -m unittest discover -s tests
 ```
+
+## Browser ကနေ သုံးမယ် (ကိုယ့် VPS)
+
+Windows မှာ နှိပ်သုံးတဲ့ app အတိုင်းပဲ။ ဖုန်း အပါအဝင် browser ကနေ သုံးနိုင်အောင် web version ထည့်ထားပါတယ်။
+Password တစ်ခု (`WEB_PASSWORD`) နဲ့ ကာကွယ်ထားပြီး သုံးသူတစ်ယောက်တည်းအတွက်ပါ။
+တပ်ဆင်နည်း အသေးစိတ် (အင်္ဂလိပ် + မြန်မာ) က **[DEPLOY.md](DEPLOY.md)** မှာ ရှိပါတယ်။ VPS ပေါ်မှာ `sudo bash deploy/install.sh` တစ်ကြိမ် run ရင် Python, FFmpeg, Chromium, မြန်မာ font, systemd, Nginx, HTTPS ကို စီစဉ်ပေးပါတယ်။
 
 ## Test
 
@@ -377,8 +386,16 @@ the same; changing it re-renders only the video parts (translation and voice are
 `translation_audit` (true), `title_font_path`, `overlay_blur_strength` (18),
 `whisper_model_other` ("medium"; the Whisper model for languages other than English).
 
+### Use it from a browser (your own VPS)
+
+The same pipeline is available as a password-protected website, including from a phone.
+One shared password (`WEB_PASSWORD`), no accounts. Step-by-step install in English and Burmese:
+**[DEPLOY.md](DEPLOY.md)**. On the server, `sudo bash deploy/install.sh` sets up Python, FFmpeg,
+Chromium, Myanmar fonts, systemd, Nginx, and HTTPS.
+
 ### Tests
 `py -3.12 -m unittest discover -s tests` (offline; Gemini is mocked).
+The web UI tests need the extra packages in `requirements.txt` (`fastapi`, `uvicorn`, `httpx`).
 
 ### Notes
 Edge TTS is a Microsoft online service and Gemini is a Google API — follow their terms. You are

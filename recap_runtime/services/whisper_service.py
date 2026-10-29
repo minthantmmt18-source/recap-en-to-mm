@@ -12,6 +12,17 @@ from typing import Any, Optional
 os.environ.setdefault("HF_HUB_DISABLE_XET", "1")
 
 
+def _cpu_threads() -> int:
+    """0 lets faster-whisper pick a default. WHISPER_CPU_THREADS=2 suits a 2-core VPS."""
+    raw = str(os.getenv("WHISPER_CPU_THREADS") or "").strip()
+    if not raw:
+        return 0
+    try:
+        return max(0, min(int(raw), 32))
+    except ValueError:
+        return 0
+
+
 class NoUsableSpeechError(RuntimeError):
     """Source downloaded correctly, but Recap cannot obtain usable speech."""
 
@@ -109,15 +120,18 @@ class WhisperTimestampService:
             return False
 
         self._download_model_once()
+        threads = _cpu_threads()
         try:
             print(
                 f"🧠 Loading faster-whisper: model={self.model_size}, "
                 f"device={self.device}, compute={self.compute_type}"
+                + (f", cpu_threads={threads}" if threads else "")
             )
             self._model = WhisperModel(
                 self.model_size,
                 device=self.device,
                 compute_type=self.compute_type,
+                cpu_threads=threads,
             )
             self._active_backend = "faster-whisper"
             return True
@@ -126,7 +140,9 @@ class WhisperTimestampService:
             if self.device != "cpu":
                 try:
                     print("↩️ faster-whisper CPU fallback (int8)")
-                    self._model = WhisperModel(self.model_size, device="cpu", compute_type="int8")
+                    self._model = WhisperModel(
+                        self.model_size, device="cpu", compute_type="int8", cpu_threads=threads,
+                    )
                     self._active_backend = "faster-whisper"
                     self.device = "cpu"
                     self.compute_type = "int8"

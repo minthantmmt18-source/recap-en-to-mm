@@ -126,7 +126,13 @@ def _browser_candidates(playwright):
             Path(local) / "Google/Chrome/Application/chrome.exe",
             Path(local) / "Microsoft/Edge/Application/msedge.exe",
         ]
-    paths += [Path("/usr/bin/chromium"), Path("/usr/bin/google-chrome")]
+    paths += [
+        Path("/usr/bin/chromium"),
+        Path("/usr/bin/chromium-browser"),
+        Path("/usr/bin/google-chrome"),
+        Path("/usr/bin/google-chrome-stable"),
+        Path("/snap/bin/chromium"),
+    ]
 
     seen = set()
     for exe in paths:

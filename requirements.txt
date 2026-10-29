@@ -18,3 +18,8 @@ pillow==12.3.0              # overlays, preview
 requests==2.32.3
 playwright==1.62.0          # Myanmar text renderer (Chromium)
 fonttools==4.63.0           # installed Myanmar fonts for the narration subtitles
+fastapi==0.115.6            # web UI (browser). The desktop app does not import it.
+itsdangerous==2.2.0         # signed login cookie
+uvicorn==0.34.0             # serves the web UI
+python-multipart==0.0.20    # video upload forms
+httpx==0.28.1               # used by the web UI tests

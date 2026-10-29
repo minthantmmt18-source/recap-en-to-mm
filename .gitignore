@@ -5,6 +5,7 @@ config.json
 # work folders made by the tool
 jobs/
 logs/
+web_data/
 setup_check.log
 
 # FFmpeg binaries you may put next to RUN.bat

@@ -1,0 +1,24 @@
+[Unit]
+Description=Recap Myanmar web (browser UI)
+After=network.target
+
+[Service]
+Type=simple
+User=__USER__
+Group=__USER__
+WorkingDirectory=__APP_DIR__
+EnvironmentFile=__APP_DIR__/.env
+Environment=PLAYWRIGHT_BROWSERS_PATH=__APP_DIR__/.cache/ms-playwright
+Environment=HF_HOME=__APP_DIR__/.cache/huggingface
+Environment=XDG_CACHE_HOME=__APP_DIR__/.cache
+Environment=PYTHONUNBUFFERED=1
+Environment=WHISPER_DEVICE=cpu
+Environment=WHISPER_COMPUTE_TYPE=int8
+Environment=WHISPER_MODEL_OTHER=small
+Environment=WHISPER_CPU_THREADS=2
+ExecStart=__APP_DIR__/.venv/bin/python -m uvicorn web.server:app --host 127.0.0.1 --port __PORT__ --proxy-headers --forwarded-allow-ips=127.0.0.1
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

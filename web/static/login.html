@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Recap → Myanmar · Login</title>
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body class="login-body">
+  <main class="card login-card">
+    <p class="eyebrow">Recap → Myanmar</p>
+    <h1>ဝင်ရန် · Sign in</h1>
+    <p class="lead">ကိုယ့် VPS ပေါ်က tool ပါ။ စကားဝှက်တစ်ခုတည်းနဲ့ ဖုန်း ဒါမှမဟုတ် ကွန်ပျူတာကနေ သုံးပါ။</p>
+    <p class="lead en">One password protects the whole site. There are no separate accounts.</p>
+    <form method="post" action="/login" autocomplete="current-password">
+      <label for="password">စကားဝှက် <span class="en">Password</span></label>
+      <input id="password" name="password" type="password" required autofocus autocomplete="current-password">
+      <p id="loginError" class="error" role="alert">{{ERROR}}</p>
+      <p class="warn">{{WARNING}}</p>
+      <button class="primary" type="submit">ဝင်မယ် · Sign in</button>
+    </form>
+  </main>
+</body>
+</html>

@@ -168,7 +168,7 @@ class Renderer:
 html,body{{margin:0;background:transparent;width:100%;height:100%;overflow:hidden}}
 #card{{position:absolute;bottom:0;left:0;width:100%;box-sizing:border-box;padding:{pad}px;
 background:{panel};text-align:center}}
-#text{{font-family:'{family}','Myanmar Text',sans-serif;font-size:{s['size']}px;
+#text{{font-family:'{family}','Myanmar Text','Noto Sans Myanmar','Padauk',sans-serif;font-size:{s['size']}px;
 font-weight:{700 if s['bold'] else 400};line-height:1.45;white-space:pre-wrap;
 color:{s['color']};-webkit-text-stroke:{stroke}px {s['outline_color']};paint-order:stroke fill;
 text-shadow:{shadow}}}</style><div id=card><div id=text></div></div>""")
